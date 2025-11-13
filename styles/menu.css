@@ -15,10 +15,7 @@
     z-index: 10;
 }
 
-.menu#zoom {
-    left: auto;
-    right: 30px;
-}
+.menu#zoom-value { color: var(--menu-color) }
 
 .menu > div:has(span) {
     width: 80px;
