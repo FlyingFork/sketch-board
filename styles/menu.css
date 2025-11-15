@@ -1,57 +1,60 @@
 .menu {
-    position: absolute;
-    left: 30px;
-    bottom: 30px;
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
 
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
 
-    background: var(--menu-background);
-    padding: 5px;
-    border-radius: 5px;
+  background: var(--menu-background);
+  padding: 5px;
+  border-radius: 5px;
 
-    box-shadow: 0 2px 4px var(--shadow-color);
-    z-index: 10;
+  box-shadow: var(--shadow-l);
+  z-index: 10;
 }
 
-.menu#zoom-value { color: var(--menu-color) }
-
 .menu > div:has(span) {
-    width: 80px;
-    height: 40px;
+  width: 80px;
+  height: 40px;
 
-    font-size: 20px;
-    font-weight: 700;
+  font-size: 20px;
+  font-weight: 700;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .menu > div {
-    width: 40px;
-    height: 40px;
-    transition: background-color 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
 }
 
-.menu > div:not(.separator):has(> svg:not(.selected)):hover {
-    cursor: pointer;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px var(--shadow-color);
-    background-color: var(--menu-accent-hover);
+.menu > div.selected {
+  border-radius: 5px;
+  box-shadow: var(--shadow-s);
+  background-color: var(--menu-accent);
+}
+
+.menu > div:not(.separator):not(.selected):hover {
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: var(--shadow-s);
+  background-color: var(--menu-accent-hover);
 }
 
 .menu > div > svg {
-    fill: var(--menu-color);
-}
-
-.menu > div > svg.selected {
-    fill: var(--menu-accent);
+  fill: var(--menu-color);
 }
 
 .menu > div.separator {
-    width: 1px;
-    background: var(--menu-separator);
-    border-radius: 0.5px;
+  width: 1px;
+  background: var(--menu-separator);
+  border-radius: 0.5px;
 }

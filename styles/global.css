@@ -1,17 +1,25 @@
 :root {
   /* Board */
-  --board-background: #F2F2F2;
+  --board-background: #f2f2f2;
 
   /* Menu */
-  --menu-background: #FFFFFF;
-  --menu-color: #2B2B2B;
-  --menu-accent: #00B8D9;
-  --menu-separator: #2B2B2B1A;
-  --menu-accent-hover: #00B8D940;
+  --menu-background: #ffffff;
+  --menu-color: #2b2b2b;
+  --menu-accent: #00b8d999;
+  --menu-separator: #2b2b2b1a;
+  --menu-accent-hover: #00b8d940;
 
   /* Global */
   --shadow-color: #22242814;
-  --font-primary: 'Noto Sans', sans-serif;
+  --font-primary: "Noto Sans", sans-serif;
+
+  /* Shadows */
+  --shadow-s: inset 0 1px 2px #ffffff30, 0 1px 2px #00000030,
+    0 2px 4px #00000015;
+  --shadow-m: inset 0 1px 2px #ffffff50, 0 2px 4px #00000030,
+    0 4px 8px #00000015;
+  --shadow-l: inset 0 1px 2px #ffffff70, 0 4px 6px #00000030,
+    0 6px 10px #00000015;
 }
 
 * {
@@ -20,7 +28,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font-primary);

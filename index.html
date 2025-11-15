@@ -27,21 +27,27 @@
 
     <link rel="stylesheet" href="styles/board.css" />
     <link rel="stylesheet" href="styles/menu.css" />
-    <link rel="stylesheet" href="styles/popup.css" />
 
     <script src="scripts/menu.js"></script>
   </head>
 
   <body>
     <main class="app">
-      <!-- <canvas id="board"></canvas> -->
+      <canvas id="board"></canvas>
 
       <section id="toolbar" class="menu"></section>
 
       <section
-        id="zoombar"
+        id="subitems"
         class="menu"
-        style="left: auto; right: 30px"
+        style="
+          display: none;
+          flex-direction: column;
+          height: fit-content;
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+        "
       ></section>
     </main>
 

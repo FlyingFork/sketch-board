@@ -4,7 +4,6 @@
   position: absolute;
   inset: 0;
   display: block;
-  cursor: pointer;
   outline: none;
   image-rendering: auto;
   background: var(--board-background);
