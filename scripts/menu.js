@@ -57,12 +57,42 @@ function populateSubitems(items, isColors = false) {
   DOMRoot.style.display = "flex";
   DOMRoot.innerHTML = "";
 
+  let counter = -1;
+
   let addSubItem = (element) => {
-    const DOMElement = document.createElement("div");
+    counter++;
+    let DOMElement = null;
+    let DOMInput = null;
+
+    if (element.editable && element.color) {
+      DOMInput = document.createElement("input");
+      DOMInput.type = "color";
+      DOMInput.style.position = "absolute";
+      DOMInput.style.opacity = 0;
+      DOMInput.style.width = 0;
+      DOMInput.style.height = 0;
+      DOMInput.style.pointerEvents = "none";
+      DOMInput.style.left = "50px";
+      DOMInput.id = "colorPicker" + counter;
+      DOMInput.value = element.color;
+
+      DOMElement = document.createElement("label");
+      DOMElement.htmlFor = "colorPicker" + counter;
+    } else {
+      DOMElement = document.createElement("div");
+    }
 
     if (element.id) DOMElement.id = element.id;
 
-    if (element.inner) DOMElement.innerHTML = element.inner;
+    if (element.inner && !element.color) DOMElement.innerHTML = element.inner;
+    if (element.color) {
+      DOMElement.innerHTML =
+        '<div class="circle" style="background-color:' +
+        ((element.color && element.color) || "#000000") +
+        '"></div>';
+
+      if (CURRENT_COLOR === element.color) DOMElement.classList.add("selected");
+    }
 
     if (element.tooltip) {
       DOMElement.dataset.bsPlacement = "right";
@@ -71,13 +101,16 @@ function populateSubitems(items, isColors = false) {
       new bootstrap.Tooltip(DOMElement);
     }
 
-    DOMRoot.appendChild(DOMElement);
-
-    if (element.color) {
-      const DOMSvg = DOMElement.querySelector("svg");
-      if (DOMSvg) DOMSvg.style.fill = element.color;
-      if (CURRENT_COLOR === element.color) DOMElement.classList.add("selected");
+    if (element.editable && DOMInput) {
+      DOMRoot.appendChild(DOMInput);
+      DOMInput.addEventListener("change", () => {
+        CURRENT_COLOR = DOMInput.value;
+        element.color = DOMInput.value;
+        populateSubitems(COLORS, true);
+      });
     }
+
+    DOMRoot.appendChild(DOMElement);
 
     DOMElement.addEventListener("click", () => {
       let DOMOldSelected = DOMRoot.querySelector(".selected");
@@ -94,26 +127,31 @@ function populateSubitems(items, isColors = false) {
   if (isColors) {
     COLORS.forEach(addSubItem);
 
-    const DOMSeparator = document.createElement("div");
-    DOMSeparator.classList.add("separator");
-    DOMSeparator.style = "width: 100%; height: 1px;";
-    DOMRoot.appendChild(DOMSeparator);
+    if (COLORS.length < 5) {
+      const DOMSeparator = document.createElement("div");
+      DOMSeparator.classList.add("separator");
+      DOMSeparator.style = "width: 100%; height: 1px;";
+      DOMRoot.appendChild(DOMSeparator);
 
-    const DOMAdd = document.createElement("div");
-    DOMAdd.dataset.bsPlacement = "right";
-    DOMAdd.dataset.bsToggle = "tooltip";
-    DOMAdd.dataset.bsTitle = "Add Color";
-    new bootstrap.Tooltip(DOMAdd);
-    DOMAdd.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>';
-    DOMRoot.appendChild(DOMAdd);
+      const DOMAddColor = document.createElement("div");
+      DOMAddColor.dataset.bsPlacement = "right";
+      DOMAddColor.dataset.bsToggle = "tooltip";
+      DOMAddColor.dataset.bsTitle = "Add Color";
+      DOMAddColor.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>';
 
-    // DOMAdd.addEventListener("click", () => {
-    //   COLORS.push({
-    //     "selectable": true,
-    //     "color": "#000000",
-    //   })
-    // })
+      new bootstrap.Tooltip(DOMAddColor);
+      DOMRoot.appendChild(DOMAddColor);
+
+      DOMAddColor.addEventListener("click", () => {
+        COLORS.push({
+          color: "#000001",
+          editable: true,
+        });
+
+        populateSubitems(COLORS, true);
+      });
+    }
   } else {
     items.forEach(addSubItem);
   }
