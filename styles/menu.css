@@ -15,18 +15,6 @@
   z-index: 10;
 }
 
-.menu > div:has(span) {
-  width: 80px;
-  height: 40px;
-
-  font-size: 20px;
-  font-weight: 700;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .menu > div {
   width: 40px;
   height: 40px;
@@ -42,11 +30,15 @@
   background-color: var(--menu-accent);
 }
 
-.menu > div:not(.separator):not(.selected):hover {
+.menu > div:not(.separator):not(.selected):not(.deactivated):hover {
   cursor: pointer;
   border-radius: 5px;
   box-shadow: var(--shadow-s);
   background-color: var(--menu-accent-hover);
+}
+
+.menu > div.deactivated > svg {
+  fill: var(--menu-deactivated);
 }
 
 .menu > div > svg {
