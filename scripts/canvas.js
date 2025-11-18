@@ -102,7 +102,8 @@ DOMCanvas.addEventListener("mousedown", (e) => {
   STATES.startY = mousePos.y;
   STATES.isDrawing = true;
 
-  CTX.strokeStyle = (STATES.tool === "eraser" && CANVAS_BACKGROUND) || STATES.color;
+  CTX.strokeStyle =
+    (STATES.tool === "eraser" && CANVAS_BACKGROUND) || STATES.color;
   CTX.lineWidth = STATES.stroke;
   CTX.lineCap = "round";
   CTX.lineJoin = "round";

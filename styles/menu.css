@@ -15,7 +15,8 @@
   z-index: 10;
 }
 
-.menu > div, .menu > label {
+.menu > div,
+.menu > label {
   width: 40px;
   height: 40px;
   display: flex;
@@ -24,13 +25,15 @@
   transition: background-color 0.2s ease;
 }
 
-.menu > div.selected, .menu > label.selected {
+.menu > div.selected,
+.menu > label.selected {
   border-radius: 5px;
   box-shadow: var(--shadow-s);
   background-color: var(--menu-accent);
 }
 
-.menu > div:not(.separator):not(.selected):not(.deactivated):hover, .menu > label:not(.selected):hover {
+.menu > div:not(.separator):not(.selected):not(.deactivated):hover,
+.menu > label:not(.selected):hover {
   cursor: pointer;
   border-radius: 5px;
   box-shadow: var(--shadow-s);

@@ -87,12 +87,24 @@ function populateSubitems(items, isColors = false) {
       DOMElement.innerHTML = element.inner;
     } else {
       DOMElement.innerHTML =
-        '<div class="circle" style="' + (element.size && ("width: " + element.size * 2 + "px; height: " + element.size * 2 + "px; ")) + 'background-color:' + ((element.color && element.color) || "#000000") + '"></div>';
+        '<div class="circle" style="' +
+        ((element.size &&
+          "width: " +
+            element.size * 2 +
+            "px; height: " +
+            element.size * 2 +
+            "px; ") ||
+          "") +
+        "background-color:" +
+        ((element.color && element.color) || "#000000") +
+        '"></div>';
 
       if (element.color) {
-        if (CURRENT_COLOR === element.color) DOMElement.classList.add("selected");
+        if (CURRENT_COLOR === element.color)
+          DOMElement.classList.add("selected");
       } else if (element.size) {
-        if (CURRENT_STROKE === element.size) DOMElement.classList.add("selected");
+        if (CURRENT_STROKE === element.size)
+          DOMElement.classList.add("selected");
       }
     }
 
@@ -209,7 +221,11 @@ function populateMenu(DOMRoot, JSONData) {
       } else {
         if (element.selectable || element.subitems) {
           DOMElement.classList.add("selected");
-          if (DOMElement.id === "pointer" || DOMElement.id === "brush" || DOMElement.id === "eraser") {
+          if (
+            DOMElement.id === "pointer" ||
+            DOMElement.id === "brush" ||
+            DOMElement.id === "eraser"
+          ) {
             CURRENT_OPTION = DOMElement.id;
             updateState("tool", CURRENT_OPTION);
           }
