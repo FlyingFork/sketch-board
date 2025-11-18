@@ -1,7 +1,8 @@
-import { test } from "./canvas.js";
+import { updateState, clearCanvas, addHistory, undo, redo } from "./canvas.js";
 
 let CURRENT_OPTION = "pointer";
 let CURRENT_COLOR = "#000000";
+let CURRENT_STROKE = 3;
 let COLORS = {};
 
 function showBootstrapModal(Title, Body) {
@@ -46,9 +47,7 @@ function ModalListener() {
   const identifier = this.dataset.modalTitle;
 
   if (identifier == "Start fresh?") {
-    const DOMCanvas = document.getElementById("board");
-    const CTX = DOMCanvas.getContext("2d");
-    CTX.clearRect(0, 0, DOMCanvas.width, DOMCanvas.height);
+    clearCanvas();
   }
 }
 
@@ -84,14 +83,17 @@ function populateSubitems(items, isColors = false) {
 
     if (element.id) DOMElement.id = element.id;
 
-    if (element.inner && !element.color) DOMElement.innerHTML = element.inner;
-    if (element.color) {
+    if (element.inner) {
+      DOMElement.innerHTML = element.inner;
+    } else {
       DOMElement.innerHTML =
-        '<div class="circle" style="background-color:' +
-        ((element.color && element.color) || "#000000") +
-        '"></div>';
+        '<div class="circle" style="' + (element.size && ("width: " + element.size * 2 + "px; height: " + element.size * 2 + "px; ")) + 'background-color:' + ((element.color && element.color) || "#000000") + '"></div>';
 
-      if (CURRENT_COLOR === element.color) DOMElement.classList.add("selected");
+      if (element.color) {
+        if (CURRENT_COLOR === element.color) DOMElement.classList.add("selected");
+      } else if (element.size) {
+        if (CURRENT_STROKE === element.size) DOMElement.classList.add("selected");
+      }
     }
 
     if (element.tooltip) {
@@ -106,6 +108,7 @@ function populateSubitems(items, isColors = false) {
       DOMInput.addEventListener("change", () => {
         CURRENT_COLOR = DOMInput.value;
         element.color = DOMInput.value;
+        updateState("color", CURRENT_COLOR);
         populateSubitems(COLORS, true);
       });
     }
@@ -120,6 +123,18 @@ function populateSubitems(items, isColors = false) {
 
       if (element.color) {
         CURRENT_COLOR = element.color;
+        updateState("color", CURRENT_COLOR);
+      } else {
+        if (
+          DOMElement.id === "triangle" ||
+          DOMElement.id === "square" ||
+          DOMElement.id === "circle"
+        ) {
+          updateState("tool", DOMElement.id);
+        } else if (DOMElement.id === "stroke") {
+          CURRENT_STROKE = element.size;
+          updateState("stroke", CURRENT_STROKE);
+        }
       }
     });
   };
@@ -194,7 +209,10 @@ function populateMenu(DOMRoot, JSONData) {
       } else {
         if (element.selectable || element.subitems) {
           DOMElement.classList.add("selected");
-          CURRENT_OPTION = DOMElement.id;
+          if (DOMElement.id === "pointer" || DOMElement.id === "brush" || DOMElement.id === "eraser") {
+            CURRENT_OPTION = DOMElement.id;
+            updateState("tool", CURRENT_OPTION);
+          }
         }
 
         if (element.subitems)
@@ -203,17 +221,44 @@ function populateMenu(DOMRoot, JSONData) {
             (element.id === "palette" && true) || false
           );
       }
+
+      if (
+        (element.id === "undo" || element.id === "redo") &&
+        !DOMElement.classList.contains("deactivated")
+      ) {
+        if (element.id === "undo") {
+          undo();
+        } else {
+          redo();
+        }
+      }
     });
 
     DOMRoot.appendChild(DOMElement);
   });
 }
 
+export function enableUndo() {
+  document.getElementById("undo").classList.remove("deactivated");
+}
+
+export function disableUndo() {
+  document.getElementById("undo").classList.add("deactivated");
+}
+
+export function enableRedo() {
+  document.getElementById("redo").classList.remove("deactivated");
+}
+
+export function disableRedo() {
+  document.getElementById("redo").classList.add("deactivated");
+}
+
 fetch("./data/menu-buttons.json")
   .then((response) => response.json())
   .then((data) => {
-    COLORS = data.toolbar[2].subitems;
+    COLORS = data.toolbar[3].subitems;
     const DOMToolbar = document.getElementById("toolbar");
     populateMenu(DOMToolbar, data.toolbar);
-    test();
+    addHistory();
   });
