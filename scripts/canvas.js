@@ -55,6 +55,7 @@ export function redo() {
   HISTORY.undo.push(state);
   CTX.putImageData(state, 0, 0);
 
+  enableUndo();
   if (!HISTORY.redo.length) disableRedo();
 }
 
