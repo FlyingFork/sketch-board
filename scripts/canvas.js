@@ -46,6 +46,7 @@ export function undo() {
   HISTORY.redo.push(HISTORY.undo.pop());
   CTX.putImageData(HISTORY.undo[HISTORY.undo.length - 1], 0, 0);
   enableRedo();
+  if (HISTORY.undo.length <= 1) disableUndo();
 }
 
 export function redo() {
