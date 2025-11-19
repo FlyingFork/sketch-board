@@ -5,6 +5,86 @@ let CURRENT_COLOR = "#000000";
 let CURRENT_STROKE = 3;
 let COLORS = {};
 
+function addMenuItem(parent, data, tooltipPlacement = "right") {
+  const DOMElement = document.createElement("div");;
+
+  if (data.id) DOMElement.id = data.id;
+
+  if (data.class) DOMElement.classList.add(data.class);
+  if (data.deactivated) DOMElement.classList.add("deactivated");
+  if (CURRENT_OPTION === data.id) DOMElement.classList.add("selected");
+
+  if (data.tooltip) {
+    DOMElement.dataset.bsToggle = "tooltip";
+    DOMElement.dataset.bsTitle = data.tooltip;
+    DOMElement.dataset.bsPlacement = tooltipPlacement;
+
+    new bootstrap.Tooltip(DOMElement);
+  }
+
+  if (data.inner) {
+    DOMElement.innerHTML = data.inner;
+  } else {
+    if (data.color) {
+      DOMElement.innerHTML =
+        '<div class="circle" style="background-color: ' +
+        data.color +
+        ';"></div>';
+
+      if (CURRENT_COLOR === data.color) DOMElement.classList.add("selected");
+    } else if (data.size) {
+      DOMElement.innerHTML =
+        '<div class="circle" style="width: ' +
+        data.size +
+        "px; height: " +
+        data.size * 2 +
+        'px ;"></div>';
+
+      if (CURRENT_STROKE === data.size) DOMElement.classList.add("selected");
+    }
+  }
+
+  DOMElement.addEventListener("click", () => {
+    if (data.class === "separator") return;
+    if (data.modal)
+      return showBootstrapModal(data.modal.title, data.modal.body);
+
+    if (!DOMElement.classList.contains("deactivated")) {
+      if (data.id === "undo") return undo();
+      if (data.id === "redo") return redo();
+    }
+
+    if (parent.id === "toolbar") {
+      let DOMSubitems = document.getElementById("subitems");
+      DOMSubitems.style.display = "none";
+    }
+
+    let DOMOldSelected = parent.querySelector(".selected");
+    if (DOMOldSelected) DOMOldSelected.classList.remove("selected");
+
+    DOMElement.classList.add("selected");
+
+    if (data.subitems)
+      return populateSubitems(
+        data.subitems,
+        (data.id === "palette" && true) || false
+      );
+
+    if (data.size) {
+      CURRENT_STROKE = data.size;
+      updateState("stroke", CURRENT_STROKE);
+    } else if (data.color) {
+      CURRENT_COLOR = data.color;
+      updateState("color", CURRENT_COLOR);
+    } else {
+      CURRENT_OPTION = data.id;
+      updateState("tool", CURRENT_OPTION);
+    }
+  });
+
+  parent.appendChild(DOMElement);
+}
+
 function showBootstrapModal(Title, Body) {
   const bootstrapModal = document.getElementById("bootstrapModal");
 
@@ -56,110 +136,18 @@ function populateSubitems(items, isColors = false) {
   DOMRoot.style.display = "flex";
   DOMRoot.innerHTML = "";
 
-  let counter = -1;
-
-  let addSubItem = (element) => {
-    counter++;
-    let DOMElement = null;
-    let DOMInput = null;
-
-    if (element.editable && element.color) {
-      DOMInput = document.createElement("input");
-      DOMInput.type = "color";
-      DOMInput.style.position = "absolute";
-      DOMInput.style.opacity = 0;
-      DOMInput.style.width = 0;
-      DOMInput.style.height = 0;
-      DOMInput.style.pointerEvents = "none";
-      DOMInput.style.left = "50px";
-      DOMInput.id = "colorPicker" + counter;
-      DOMInput.value = element.color;
-
-      DOMElement = document.createElement("label");
-      DOMElement.htmlFor = "colorPicker" + counter;
-    } else {
-      DOMElement = document.createElement("div");
-    }
-
-    if (element.id) DOMElement.id = element.id;
-
-    if (element.inner) {
-      DOMElement.innerHTML = element.inner;
-    } else {
-      DOMElement.innerHTML =
-        '<div class="circle" style="' +
-        ((element.size &&
-          "width: " +
-            element.size * 2 +
-            "px; height: " +
-            element.size * 2 +
-            "px; ") ||
-          "") +
-        "background-color:" +
-        ((element.color && element.color) || "#000000") +
-        '"></div>';
-
-      if (element.color) {
-        if (CURRENT_COLOR === element.color)
-          DOMElement.classList.add("selected");
-      } else if (element.size) {
-        if (CURRENT_STROKE === element.size)
-          DOMElement.classList.add("selected");
-      }
-    }
-
-    if (element.tooltip) {
-      DOMElement.dataset.bsPlacement = "right";
-      DOMElement.dataset.bsToggle = "tooltip";
-      DOMElement.dataset.bsTitle = element.tooltip;
-      new bootstrap.Tooltip(DOMElement);
-    }
-
-    if (element.editable && DOMInput) {
-      DOMRoot.appendChild(DOMInput);
-      DOMInput.addEventListener("change", () => {
-        CURRENT_COLOR = DOMInput.value;
-        element.color = DOMInput.value;
-        updateState("color", CURRENT_COLOR);
-        populateSubitems(COLORS, true);
-      });
-    }
-
-    DOMRoot.appendChild(DOMElement);
-
-    DOMElement.addEventListener("click", () => {
-      let DOMOldSelected = DOMRoot.querySelector(".selected");
-      if (DOMOldSelected) DOMOldSelected.classList.remove("selected");
-
-      DOMElement.classList.add("selected");
-
-      if (element.color) {
-        CURRENT_COLOR = element.color;
-        updateState("color", CURRENT_COLOR);
-      } else {
-        if (
-          DOMElement.id === "triangle" ||
-          DOMElement.id === "square" ||
-          DOMElement.id === "circle"
-        ) {
-          updateState("tool", DOMElement.id);
-        } else if (DOMElement.id === "stroke") {
-          CURRENT_STROKE = element.size;
-          updateState("stroke", CURRENT_STROKE);
-        }
-      }
-    });
-  };
+  let subItems = (isColors && COLORS) || items;
+  subItems.forEach((entry) => {
+    addMenuItem(DOMRoot, entry, "right");
+  });
 
   if (isColors) {
-    COLORS.forEach(addSubItem);
+    const DOMSeparator = document.createElement("div");
+    DOMSeparator.classList.add("separator");
+    DOMSeparator.style = "width: 100%; height: 1px;";
+    DOMRoot.appendChild(DOMSeparator);
 
     if (COLORS.length < 5) {
-      const DOMSeparator = document.createElement("div");
-      DOMSeparator.classList.add("separator");
-      DOMSeparator.style = "width: 100%; height: 1px;";
-      DOMRoot.appendChild(DOMSeparator);
-
       const DOMAddColor = document.createElement("div");
       DOMAddColor.dataset.bsPlacement = "right";
       DOMAddColor.dataset.bsToggle = "tooltip";
@@ -176,81 +164,73 @@ function populateSubitems(items, isColors = false) {
           editable: true,
         });
 
-        populateSubitems(COLORS, true);
+        populateSubitems(items, isColors);
       });
     }
-  } else {
-    items.forEach(addSubItem);
+
+    const DOMEditColor = document.createElement("div");
+    DOMEditColor.dataset.bsPlacement = "right";
+    DOMEditColor.dataset.bsToggle = "tooltip";
+    DOMEditColor.dataset.bsTitle = "Edit Selected Color";
+    DOMEditColor.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M416.9 85.2L372 130.1L509.9 268L554.8 223.1C568.4 209.6 576 191.2 576 172C576 152.8 568.4 134.4 554.8 120.9L519.1 85.2C505.6 71.6 487.2 64 468 64C448.8 64 430.4 71.6 416.9 85.2zM338.1 164L122.9 379.1C112.2 389.8 104.4 403.2 100.3 417.8L64.9 545.6C62.6 553.9 64.9 562.9 71.1 569C77.3 575.1 86.2 577.5 94.5 575.2L222.3 539.7C236.9 535.6 250.2 527.9 261 517.1L476 301.9L338.1 164z"/></svg>';
+    new bootstrap.Tooltip(DOMEditColor);
+
+    const DOMColorSelector = document.createElement("input");
+
+    DOMColorSelector.type = "color";
+    DOMColorSelector.id = "colorPicker";
+
+    DOMColorSelector.value = CURRENT_COLOR;
+
+    DOMColorSelector.style.width = 0;
+    DOMColorSelector.style.height = 0;
+    DOMColorSelector.style.opacity = 0;
+    DOMColorSelector.style.top = "50%";
+    DOMColorSelector.style.left = "50px";
+    DOMColorSelector.style.position = "absolute";
+    DOMColorSelector.style.pointerEvents = "none";
+    DOMColorSelector.style.transform = "translateY(-50%)";
+
+    DOMEditColor.addEventListener("click", () => {
+      DOMColorSelector.click();
+      DOMColorSelector.value = CURRENT_COLOR;
+    })
+
+    DOMColorSelector.addEventListener("change", () => {
+      let NEW_COLOR = DOMColorSelector.value;
+      let OLD_COLOR = CURRENT_COLOR;
+
+      CURRENT_COLOR = NEW_COLOR;
+      updateState("color", CURRENT_COLOR);
+
+      for (let index = 0; index < COLORS.length; index++) {
+        const entry = COLORS[index];
+        if (entry.color === OLD_COLOR) {
+          COLORS[index].color = CURRENT_COLOR;
+          let colorDIV = DOMRoot.querySelectorAll("#subitems > div")[index];
+          if (colorDIV) {
+            let circleDIV = colorDIV.querySelector("div");
+            if (circleDIV) {
+              circleDIV.style.backgroundColor = CURRENT_COLOR;
+            }
+          } else {
+            populateSubitems(items, isColors);
+          }
+
+          break;
+        }
+      }
+    })
+
+    DOMRoot.appendChild(DOMColorSelector);
+    DOMRoot.appendChild(DOMEditColor);
   }
 }
 
 function populateMenu(DOMRoot, JSONData) {
-  JSONData.forEach((element) => {
-    const DOMElement = document.createElement("div");
-
-    if (element.class) DOMElement.classList.add(element.class);
-
-    if (element.id) DOMElement.id = element.id;
-
-    if (element.inner) DOMElement.innerHTML = element.inner;
-
-    if (element.tooltip) {
-      DOMElement.dataset.bsPlacement = "top";
-      DOMElement.dataset.bsToggle = "tooltip";
-      DOMElement.dataset.bsTitle = element.tooltip;
-      new bootstrap.Tooltip(DOMElement);
-    }
-
-    if (CURRENT_OPTION === element.id) DOMElement.classList.add("selected");
-
-    if (element.deactivated) DOMElement.classList.add("deactivated");
-
-    DOMElement.addEventListener("click", () => {
-      if (element.selectable || element.subitems) {
-        let DOMOldSelected = DOMRoot.querySelector(".selected");
-        if (DOMOldSelected) {
-          DOMOldSelected.classList.remove("selected");
-
-          let DOMSubItems = document.getElementById("subitems");
-          DOMSubItems.style.display = "none";
-        }
-      }
-
-      if (element.modal) {
-        showBootstrapModal(element.modal.title, element.modal.body);
-      } else {
-        if (element.selectable || element.subitems) {
-          DOMElement.classList.add("selected");
-          if (
-            DOMElement.id === "pointer" ||
-            DOMElement.id === "brush" ||
-            DOMElement.id === "eraser"
-          ) {
-            CURRENT_OPTION = DOMElement.id;
-            updateState("tool", CURRENT_OPTION);
-          }
-        }
-
-        if (element.subitems)
-          populateSubitems(
-            element.subitems,
-            (element.id === "palette" && true) || false
-          );
-      }
-
-      if (
-        (element.id === "undo" || element.id === "redo") &&
-        !DOMElement.classList.contains("deactivated")
-      ) {
-        if (element.id === "undo") {
-          undo();
-        } else {
-          redo();
-        }
-      }
-    });
-
-    DOMRoot.appendChild(DOMElement);
+  JSONData.forEach((entry) => {
+    addMenuItem(DOMRoot, entry, "top");
   });
 }
 
