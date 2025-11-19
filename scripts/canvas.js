@@ -8,6 +8,7 @@ const STATES = {
   color: "#000000",
   isDrawing: false,
   snapshot: null,
+  volume: 0.6,
   stroke: 3,
   startX: 0,
   startY: 0,
@@ -18,6 +19,10 @@ const HISTORY = {
   redo: [],
   MAX_HISTORY: 30,
 };
+
+const BRUSH_SOUND = new Audio("../sounds/brush.mp3");
+BRUSH_SOUND.volume = STATES.volume;
+BRUSH_SOUND.loop = true;
 
 function resizeCanvas() {
   const ClientRect = DOMCanvas.getBoundingClientRect();
@@ -61,6 +66,8 @@ export function redo() {
 
 export function updateState(state, value) {
   STATES[state] = value;
+
+  if (state === "volume") BRUSH_SOUND.volume = STATES[state];
 }
 
 export function clearCanvas() {
@@ -113,6 +120,8 @@ DOMCanvas.addEventListener("mousedown", (e) => {
   if (STATES.tool === "brush" || STATES.tool === "eraser") {
     CTX.beginPath();
     CTX.moveTo(STATES.startX, STATES.startY);
+
+    BRUSH_SOUND.play();
   } else {
     STATES.snapshot = CTX.getImageData(0, 0, DOMCanvas.width, DOMCanvas.height);
   }
@@ -137,6 +146,7 @@ DOMCanvas.addEventListener("mousemove", (e) => {
 function finishDraw(e) {
   if (!STATES.isDrawing) return;
   STATES.isDrawing = false;
+  BRUSH_SOUND.pause();
 
   if (STATES.tool !== "brush" && STATES.tool !== "eraser" && STATES.snapshot) {
     const mousePos = getMousePos(e);
@@ -154,5 +164,6 @@ DOMCanvas.addEventListener("mouseleave", () => {
     STATES.isDrawing = false;
     STATES.snapshot = null;
     addHistory();
+    BRUSH_SOUND.pause();
   }
 });

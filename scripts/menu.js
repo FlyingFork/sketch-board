@@ -2,11 +2,12 @@ import { updateState, clearCanvas, addHistory, undo, redo } from "./canvas.js";
 
 let CURRENT_OPTION = "pointer";
 let CURRENT_COLOR = "#000000";
+let CURRENT_VOLUME = 0.6;
 let CURRENT_STROKE = 3;
 let COLORS = {};
 
 function addMenuItem(parent, data, tooltipPlacement = "right") {
-  const DOMElement = document.createElement("div");;
+  const DOMElement = document.createElement("div");
 
   if (data.id) DOMElement.id = data.id;
 
@@ -41,6 +42,8 @@ function addMenuItem(parent, data, tooltipPlacement = "right") {
         'px ;"></div>';
 
       if (CURRENT_STROKE === data.size) DOMElement.classList.add("selected");
+    } else if (data.id === "sound") {
+      DOMElement.innerHTML = data.states[CURRENT_VOLUME];
     }
   }
 
@@ -59,10 +62,12 @@ function addMenuItem(parent, data, tooltipPlacement = "right") {
       DOMSubitems.style.display = "none";
     }
 
-    let DOMOldSelected = parent.querySelector(".selected");
-    if (DOMOldSelected) DOMOldSelected.classList.remove("selected");
+    if (!data.action) {
+      let DOMOldSelected = parent.querySelector(".selected");
+      if (DOMOldSelected) DOMOldSelected.classList.remove("selected");
 
-    DOMElement.classList.add("selected");
+      DOMElement.classList.add("selected");
+    }
 
     if (data.subitems)
       return populateSubitems(
@@ -76,6 +81,25 @@ function addMenuItem(parent, data, tooltipPlacement = "right") {
     } else if (data.color) {
       CURRENT_COLOR = data.color;
       updateState("color", CURRENT_COLOR);
+    } else if (data.id === "sound") {
+      let newVolume = CURRENT_VOLUME;
+
+      switch (CURRENT_VOLUME) {
+        case 0.6:
+          newVolume = 0.3;
+          break;
+        case 0.3:
+          newVolume = 0;
+          break;
+        case 0:
+          newVolume = 0.6;
+          break;
+      }
+
+      CURRENT_VOLUME = newVolume;
+      updateState("volume", CURRENT_VOLUME);
+
+      DOMElement.innerHTML = data.states[CURRENT_VOLUME];
     } else {
       CURRENT_OPTION = data.id;
       updateState("tool", CURRENT_OPTION);
@@ -195,7 +219,7 @@ function populateSubitems(items, isColors = false) {
     DOMEditColor.addEventListener("click", () => {
       DOMColorSelector.click();
       DOMColorSelector.value = CURRENT_COLOR;
-    })
+    });
 
     DOMColorSelector.addEventListener("change", () => {
       let NEW_COLOR = DOMColorSelector.value;
@@ -221,7 +245,7 @@ function populateSubitems(items, isColors = false) {
           break;
         }
       }
-    })
+    });
 
     DOMRoot.appendChild(DOMColorSelector);
     DOMRoot.appendChild(DOMEditColor);
