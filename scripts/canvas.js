@@ -88,7 +88,12 @@ function drawShape(x1, y1, x2, y2) {
   CTX.lineWidth = STATES.stroke;
   CTX.beginPath();
 
-  if (STATES.tool === "square") {
+  if (STATES.tool === "line") {
+    CTX.moveTo(x1, y1);
+    CTX.lineTo(x2, y2);
+    CTX.closePath();
+    CTX.stroke();
+  } else if (STATES.tool === "square") {
     CTX.strokeRect(x2, y2, x1 - x2, y1 - y2);
   } else if (STATES.tool === "circle") {
     const radius = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -166,4 +171,42 @@ DOMCanvas.addEventListener("mouseleave", () => {
     addHistory();
     BRUSH_SOUND.pause();
   }
+});
+
+// Mobile Support
+DOMCanvas.style.touchAction = "none";
+
+DOMCanvas.addEventListener("touchstart", (e) => {
+  if (e.cancelable) e.preventDefault();
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent("mousedown", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
+  DOMCanvas.dispatchEvent(mouseEvent);
+}, { passive: false });
+
+DOMCanvas.addEventListener("touchmove", (e) => {
+  if (e.cancelable) e.preventDefault();
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent("mousemove", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
+  DOMCanvas.dispatchEvent(mouseEvent);
+}, { passive: false });
+
+DOMCanvas.addEventListener("touchend", (e) => {
+  if (e.cancelable) e.preventDefault();
+  const touch = e.changedTouches[0];
+  const mouseEvent = new MouseEvent("mouseup", {
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+  });
+  DOMCanvas.dispatchEvent(mouseEvent);
+}, { passive: false });
+
+DOMCanvas.addEventListener("touchcancel", () => {
+  const mouseEvent = new MouseEvent("mouseleave");
+  DOMCanvas.dispatchEvent(mouseEvent);
 });
